@@ -1,52 +1,89 @@
-create extension if not exists pgcrypto;
+# Fitness Pro
 
-create table if not exists public.membership_requests (
- id uuid primary key default gen_random_uuid(),
- name text not null,
- phone text not null,
- email text,
- plan text,
- status text not null default 'new' check (status in ('new','contacted','approved','rejected')),
- created_at timestamptz not null default now()
-);
+Production website and membership-request dashboard for Fitness Pro, Abbottabad.
 
-create table if not exists public.site_settings (
- id boolean primary key default true,
- gym_name text not null default 'Fitness Pro',
- email text not null default 'min955378@gmail.com',
- phone text not null default '03485581969',
- address text not null default '5752+WRX, Orish Colony Rd, Nawan Shehr Town, Abbottabad, Pakistan',
- weekday_hours text not null default '6:00 AM - 10:00 AM and 3:00 PM - 11:30 PM',
- weekend_hours text not null default 'Closed',
- facebook text, instagram text, tiktok text, youtube text,
- updated_at timestamptz not null default now()
-);
+**Live site:** https://fitness-pro-kappa.vercel.app
 
-create table if not exists public.trainers (
- id uuid primary key default gen_random_uuid(),
- name text not null, specialty text, bio text, image_url text, is_visible boolean not null default true,
- created_at timestamptz not null default now()
-);
+## Stack
 
-insert into public.site_settings (id) values (true) on conflict (id) do nothing;
+- Next.js 16
+- React 19
+- TypeScript
+- Supabase Auth, Postgres, and Row Level Security
+- Vercel
 
-alter table public.membership_requests enable row level security;
-alter table public.site_settings enable row level security;
-alter table public.trainers enable row level security;
+## Features
 
-drop policy if exists "public can submit membership requests" on public.membership_requests;
-create policy "public can submit membership requests" on public.membership_requests for insert to anon, authenticated with check (true);
-drop policy if exists "admin can read membership requests" on public.membership_requests;
-create policy "admin can read membership requests" on public.membership_requests for select to authenticated using ((auth.jwt() ->> 'email') = 'min955378@gmail.com');
-drop policy if exists "admin can update membership requests" on public.membership_requests;
-create policy "admin can update membership requests" on public.membership_requests for update to authenticated using ((auth.jwt() ->> 'email') = 'min955378@gmail.com') with check ((auth.jwt() ->> 'email') = 'min955378@gmail.com');
+- Responsive gym landing page
+- Membership and diet-plan pricing
+- Membership request form backed by Supabase
+- Admin authentication
+- Admin dashboard and membership-request list
+- Supabase Row Level Security policies
 
-drop policy if exists "public can read site settings" on public.site_settings;
-create policy "public can read site settings" on public.site_settings for select to anon, authenticated using (true);
-drop policy if exists "admin can update site settings" on public.site_settings;
-create policy "admin can update site settings" on public.site_settings for update to authenticated using ((auth.jwt() ->> 'email') = 'min955378@gmail.com') with check ((auth.jwt() ->> 'email') = 'min955378@gmail.com');
+## Local setup
 
-drop policy if exists "public can read visible trainers" on public.trainers;
-create policy "public can read visible trainers" on public.trainers for select to anon, authenticated using (is_visible = true);
-drop policy if exists "admin can manage trainers" on public.trainers;
-create policy "admin can manage trainers" on public.trainers for all to authenticated using ((auth.jwt() ->> 'email') = 'min955378@gmail.com') with check ((auth.jwt() ->> 'email') = 'min955378@gmail.com');
+1. Install dependencies:
+
+   ```bash
+   npm ci
+   ```
+
+2. Copy the environment template:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+3. Set these browser-safe Supabase values in `.env.local`:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-publishable-or-anon-key
+   ```
+
+4. Run `supabase/schema.sql` in the Supabase SQL Editor.
+
+5. In Supabase Authentication, create and confirm the admin user whose email is authorized in `supabase/schema.sql`.
+
+6. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+## Quality checks
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm audit --omit=dev
+```
+
+## Deployment
+
+The production Vercel project is named `fitness-pro`. Configure these variables for Production and Preview:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Both values are intended for browser use. Never expose or commit a Supabase service-role key.
+
+Merges and pushes to the connected production branch can be deployed automatically after the GitHub repository is linked in Vercel.
+
+## Business details
+
+- **Name:** Fitness Pro
+- **Email:** min955378@gmail.com
+- **Phone/WhatsApp:** 0348 5581969
+- **Address:** 5752+WRX, Orish Colony Rd, Nawan Shehr Town, Abbottabad, Pakistan
+- **Monday–Friday:** 6:00 AM–10:00 AM and 3:00 PM–11:30 PM
+- **Saturday–Sunday:** Closed
+
+## Security
+
+- Membership requests can be inserted anonymously but cannot be read anonymously.
+- Admin reads and updates are restricted by Supabase RLS.
+- `.env*` files are ignored except `.env.example`.
+- Add rate limiting and bot protection before running paid advertising or high-volume campaigns.

@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240"><rect width="900" height="240" rx="30" fill="#090b0c"/><circle cx="120" cy="120" r="78" fill="#f5c400"/><text x="120" y="143" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="78" font-weight="900" fill="#090b0c">FP</text><text x="230" y="145" font-family="Arial,Helvetica,sans-serif" font-size="76" font-weight="900" fill="#fff">FITNESS </text><text x="610" y="145" font-family="Arial,Helvetica,sans-serif" font-size="76" font-weight="900" fill="#f5c400">PRO</text></svg>
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/types/routes.d.ts";
+import "./.next/types/root-params.d.ts";
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
