@@ -1,10 +1,21 @@
+import {unstable_cache} from 'next/cache'
 import {redirect} from 'next/navigation'
+import {createClient as createPublicSupabaseClient} from '@supabase/supabase-js'
 import {createClient} from './supabase-server'
 import {defaultDietPlans, defaultDurations, defaultGallery, defaultPlans, defaultRates, defaultSettings} from './data'
 import type {DietPlan, DurationPrice, GalleryItem, Member, MembershipPlan, PricingRate, SiteSettings, Trainer} from './types'
 
-export async function getPublicData(){
-  const supabase = await createClient()
+export const PUBLIC_DATA_TAG = 'fitness-pro-public-data'
+
+const fetchPublicData = unstable_cache(async () => {
+  const url=process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if(!url||!key)return {settings:defaultSettings,plans:defaultPlans,dietPlans:defaultDietPlans,rates:defaultRates,durations:defaultDurations,trainers:[] as Trainer[],gallery:defaultGallery}
+  const supabase = createPublicSupabaseClient(
+    url,
+    key,
+    {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}
+  )
   const [settingsResult,plansResult,dietResult,ratesResult,durationsResult,trainersResult,galleryResult] = await Promise.all([
     supabase.from('site_settings').select('*').eq('id',true).maybeSingle(),
     supabase.from('membership_plans').select('*').eq('is_active',true).order('sort_order'),
@@ -24,6 +35,10 @@ export async function getPublicData(){
     trainers: (trainersResult.data ?? []) as Trainer[],
     gallery: (galleryResult.data?.length ? galleryResult.data : defaultGallery) as GalleryItem[],
   }
+}, ['fitness-pro-public-data-v2'], {revalidate:300,tags:[PUBLIC_DATA_TAG]})
+
+export async function getPublicData(){
+  return fetchPublicData()
 }
 
 export async function getSessionUser(){

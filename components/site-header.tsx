@@ -1,10 +1,10 @@
 'use client'
 import Link from 'next/link'
-import {Menu,UserRound,X} from 'lucide-react'
+import {Menu,X} from 'lucide-react'
 import {useState} from 'react'
 import {Logo} from './logo'
 
-export function SiteHeader({userName,isAdmin=false}:{userName?:string|null;isAdmin?:boolean}){
+export function SiteHeader(){
   const [open,setOpen]=useState(false)
   const close=()=>setOpen(false)
   return <header className="siteHeader">
@@ -17,8 +17,8 @@ export function SiteHeader({userName,isAdmin=false}:{userName?:string|null;isAdm
         <Link onClick={close} href="/trainers">Trainers</Link>
         <Link onClick={close} href="/gallery">Gallery</Link>
         <Link onClick={close} href="/contact">Contact</Link>
-        {userName?<Link onClick={close} className="memberLink" href={isAdmin?'/admin/dashboard':'/member'}><UserRound size={16}/>{isAdmin?'Admin portal':'My portal'}</Link>:<Link onClick={close} href="/login">Log in</Link>}
-        <Link onClick={close} className="button buttonSmall" href={userName?(isAdmin?'/admin/dashboard':'/member'):'/register'}>{userName?'Open portal':'Join now'}</Link>
+        <Link onClick={close} href="/login">Member login</Link>
+        <Link onClick={close} className="button buttonSmall" href="/register">Join now</Link>
       </nav>
     </div>
   </header>
